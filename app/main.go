@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 func main() {
@@ -10,7 +11,12 @@ func main() {
 
 	for {
 		fmt.Scanln(&cmd)
-		fmt.Printf("%s: command not found\n", cmd)
+		switch cmd {
+		case "exit":
+			os.Exit(0)
+		default:
+			fmt.Printf("%s: command not found\n", cmd)
+		}
 		fmt.Print("$ ")
 	}
 }
