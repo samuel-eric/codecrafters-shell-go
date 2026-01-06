@@ -2,16 +2,17 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
 
 func main() {
-	fmt.Print("$ ")
-
 	for {
+		fmt.Print("$ ")
 		input, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		if err != nil {
 			fmt.Println("error reading command")
@@ -55,9 +56,16 @@ func main() {
 				}
 			}
 		default:
-			fmt.Printf("%s: command not found\n", cmd)
+			command := exec.Command(cmd, arg...)
+			out, err := command.Output()
+			if err != nil {
+				if errors.Is(err, exec.ErrNotFound) {
+					fmt.Printf("%s: command not found\n", cmd)
+				} else {
+					fmt.Printf("%s: error when running: %s\n", cmd, err)
+				}
+			}
+			fmt.Print(string(out))
 		}
-
-		fmt.Print("$ ")
 	}
 }
