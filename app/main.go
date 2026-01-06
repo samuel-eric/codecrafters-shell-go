@@ -61,6 +61,11 @@ func main() {
 				fmt.Printf("%s: error when running: %s\n", cmd, err)
 			}
 			fmt.Println(pwd)
+		case "cd":
+			err := os.Chdir(argStr)
+			if err != nil {
+				fmt.Printf("cd: %s: No such file or directory\n", argStr)
+			}
 		default:
 			command := exec.Command(cmd, arg...)
 			out, err := command.Output()
