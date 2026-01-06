@@ -62,7 +62,11 @@ func main() {
 			}
 			fmt.Println(pwd)
 		case "cd":
-			err := os.Chdir(argStr)
+			dir := argStr
+			if argStr == "~" {
+				dir, _ = os.UserHomeDir()
+			}
+			err := os.Chdir(dir)
 			if err != nil {
 				fmt.Printf("cd: %s: No such file or directory\n", argStr)
 			}
