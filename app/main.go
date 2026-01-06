@@ -29,7 +29,7 @@ func main() {
 		case "echo":
 			fmt.Println(argStr)
 		case "type":
-			validCmds := map[string]bool{"exit": true, "echo": true, "type": true}
+			validCmds := map[string]bool{"exit": true, "echo": true, "type": true, "pwd": true}
 			if _, ok := validCmds[argStr]; ok {
 				fmt.Printf("%s is a shell builtin\n", argStr)
 			} else {
@@ -55,6 +55,12 @@ func main() {
 					fmt.Printf("%s: not found\n", argStr)
 				}
 			}
+		case "pwd":
+			pwd, err := os.Getwd()
+			if err != nil {
+				fmt.Printf("%s: error when running: %s\n", cmd, err)
+			}
+			fmt.Println(pwd)
 		default:
 			command := exec.Command(cmd, arg...)
 			out, err := command.Output()
