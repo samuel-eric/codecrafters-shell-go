@@ -87,10 +87,57 @@ func main() {
 }
 
 func handleArg(arg string) (string, []string) {
-	args := strings.Split(arg, "'")
+	var args []string
+	if strings.Contains(arg, `"`) {
+		args = strings.Split(arg, `"`)
 
-	// no quote -> collapse space
-	if len(args) == 1 {
+		var output []string
+		for _, arg := range args {
+			if arg != "" {
+				if strings.TrimSpace(arg) == "" {
+					output = append(output, " ")
+				} else {
+					if strings.HasPrefix(arg, " ") {
+						arg = " " + strings.TrimSpace(arg)
+					}
+					if strings.HasSuffix(arg, " ") {
+						arg = strings.TrimSpace(arg) + " "
+					}
+					output = append(output, arg)
+				}
+			}
+		}
+		argStr := strings.Join(output, "")
+
+		var outputArg []string
+		for _, x := range output {
+			if strings.TrimSpace(x) != "" {
+				outputArg = append(outputArg, x)
+			}
+		}
+
+		return argStr, outputArg
+	} else if strings.Contains(arg, "'") {
+		args = strings.Split(arg, "'")
+
+		var output []string
+		for _, arg := range args {
+			if arg != "" {
+				output = append(output, arg)
+			}
+		}
+		argStr := strings.Join(output, "")
+
+		var outputArg []string
+		for _, x := range output {
+			if strings.TrimSpace(x) != "" {
+				outputArg = append(outputArg, x)
+			}
+		}
+
+		return argStr, outputArg
+	} else {
+		// no quote -> collapse space
 		args = strings.Split(arg, " ")
 		var output []string
 		for _, arg := range args {
@@ -100,21 +147,4 @@ func handleArg(arg string) (string, []string) {
 		}
 		return strings.Join(output, " "), output
 	}
-
-	var output []string
-	for _, arg := range args {
-		if arg != "" {
-			output = append(output, arg)
-		}
-	}
-	argStr := strings.Join(output, "")
-
-	var outputArg []string
-	for _, x := range output {
-		if strings.TrimSpace(x) != "" {
-			outputArg = append(outputArg, x)
-		}
-	}
-
-	return argStr, outputArg
 }
