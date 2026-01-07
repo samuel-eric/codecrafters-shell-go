@@ -20,8 +20,9 @@ func main() {
 		}
 
 		input = input[:len(input)-1]
-		cmd, arg := strings.Split(input, " ")[0], strings.Split(input, " ")[1:]
-		argStr := strings.Join(arg, " ")
+		cmd := strings.Split(input, " ")[0]
+		argStr := strings.TrimSpace(strings.TrimPrefix(input, cmd))
+		argStr, arg := handleArg(argStr)
 
 		switch cmd {
 		case "exit":
@@ -83,4 +84,37 @@ func main() {
 			fmt.Print(string(out))
 		}
 	}
+}
+
+func handleArg(arg string) (string, []string) {
+	args := strings.Split(arg, "'")
+
+	// no quote -> collapse space
+	if len(args) == 1 {
+		args = strings.Split(arg, " ")
+		var output []string
+		for _, arg := range args {
+			if arg != "" {
+				output = append(output, strings.TrimSpace(arg))
+			}
+		}
+		return strings.Join(output, " "), output
+	}
+
+	var output []string
+	for _, arg := range args {
+		if arg != "" {
+			output = append(output, arg)
+		}
+	}
+	argStr := strings.Join(output, "")
+
+	var outputArg []string
+	for _, x := range output {
+		if strings.TrimSpace(x) != "" {
+			outputArg = append(outputArg, x)
+		}
+	}
+
+	return argStr, outputArg
 }
