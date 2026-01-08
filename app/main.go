@@ -87,64 +87,95 @@ func main() {
 }
 
 func handleArg(arg string) (string, []string) {
-	var args []string
-	if strings.Contains(arg, `"`) {
-		args = strings.Split(arg, `"`)
-
-		var output []string
-		for _, arg := range args {
-			if arg != "" {
-				if strings.TrimSpace(arg) == "" {
-					output = append(output, " ")
-				} else {
-					if strings.HasPrefix(arg, " ") {
-						arg = " " + strings.TrimSpace(arg)
-					}
-					if strings.HasSuffix(arg, " ") {
-						arg = strings.TrimSpace(arg) + " "
-					}
-					output = append(output, arg)
-				}
-			}
-		}
-		argStr := strings.Join(output, "")
-
-		var outputArg []string
-		for _, x := range output {
-			if strings.TrimSpace(x) != "" {
-				outputArg = append(outputArg, x)
-			}
-		}
-
-		return argStr, outputArg
-	} else if strings.Contains(arg, "'") {
-		args = strings.Split(arg, "'")
-
-		var output []string
-		for _, arg := range args {
-			if arg != "" {
-				output = append(output, arg)
-			}
-		}
-		argStr := strings.Join(output, "")
-
-		var outputArg []string
-		for _, x := range output {
-			if strings.TrimSpace(x) != "" {
-				outputArg = append(outputArg, x)
-			}
-		}
-
-		return argStr, outputArg
+	if strings.Contains(arg, `"`) && !strings.Contains(arg, `\"`) {
+		return handleDoubleQuote(arg)
+	} else if strings.Contains(arg, "'") && !strings.Contains(arg, `\'`) {
+		return handleSingleQuote(arg)
 	} else {
 		// no quote -> collapse space
-		args = strings.Split(arg, " ")
+		arg = handleBackslashOutsideQuote(arg)
+		args := strings.Split(arg, " ")
 		var output []string
 		for _, arg := range args {
 			if arg != "" {
 				output = append(output, strings.TrimSpace(arg))
 			}
 		}
-		return strings.Join(output, " "), output
+		return arg, output
 	}
+}
+
+func handleDoubleQuote(arg string) (string, []string) {
+	args := strings.Split(arg, `"`)
+
+	var output []string
+	for _, arg := range args {
+		if arg != "" {
+			if strings.TrimSpace(arg) == "" {
+				output = append(output, " ")
+			} else {
+				if strings.HasPrefix(arg, " ") {
+					arg = " " + strings.TrimSpace(arg)
+				}
+				if strings.HasSuffix(arg, " ") {
+					arg = strings.TrimSpace(arg) + " "
+				}
+				output = append(output, arg)
+			}
+		}
+	}
+
+	return strings.Join(output, ""), generateCommandForExec(output)
+}
+
+func handleSingleQuote(arg string) (string, []string) {
+	args := strings.Split(arg, "'")
+
+	var output []string
+	for _, arg := range args {
+		if arg != "" {
+			output = append(output, arg)
+		}
+	}
+
+	return strings.Join(output, ""), generateCommandForExec(output)
+}
+
+func generateCommandForExec(args []string) []string {
+	var outputArg []string
+	for _, x := range args {
+		if strings.TrimSpace(x) != "" {
+			outputArg = append(outputArg, x)
+		}
+	}
+	return outputArg
+}
+
+func handleBackslashOutsideQuote(arg string) string {
+	var output strings.Builder
+	lastWasSpace := false
+	for i := 0; i < len(arg); i++ {
+		switch arg[i] {
+		case '\\':
+			// r is escape character -> next character need to be escaped
+			// don't write the r (\)
+			if i+1 < len(arg) {
+				output.WriteByte(arg[i+1])
+				// skip next character -> already processed
+				i++
+			}
+			lastWasSpace = false
+		case ' ':
+			// just a space, need to be collapsed
+			if !lastWasSpace {
+				output.WriteByte(arg[i])
+				lastWasSpace = true
+			}
+		default:
+			output.WriteByte(arg[i])
+			lastWasSpace = false
+		}
+	}
+
+	return output.String()
 }
